@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npx tsc -b && npx vite build",
+  "outputDirectory": "dist/client",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
