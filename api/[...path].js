@@ -1,5 +1,3 @@
-import worker from '../worker/index.js'
-
 const env = {
   DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
   DEEPSEEK_MODEL: process.env.DEEPSEEK_MODEL,
@@ -57,7 +55,8 @@ export default async function handler(req, res) {
       headers,
       body: await requestBody(req),
     })
-    const response = await worker.fetch(request, env)
+    const worker = await import('../worker/index.js')
+    const response = await worker.default.fetch(request, env)
     await sendResponse(response, res)
   } catch (error) {
     res.statusCode = 502
