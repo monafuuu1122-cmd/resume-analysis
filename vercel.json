@@ -2,7 +2,44 @@
   "buildCommand": "npx tsc -b && npx vite build",
   "outputDirectory": "dist/client",
   "framework": "vite",
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 60
+    }
+  },
   "rewrites": [
+    {
+      "source": "/api/ai/health",
+      "destination": "/api/ai-health"
+    },
+    {
+      "source": "/api/ai/extract",
+      "destination": "/api/ai-extract"
+    },
+    {
+      "source": "/api/interview-research/:analysisId/regenerate",
+      "destination": "/api/interview-research-regenerate?analysisId=:analysisId"
+    },
+    {
+      "source": "/api/interview-research/:analysisId/company-only",
+      "destination": "/api/interview-research-company-only?analysisId=:analysisId"
+    },
+    {
+      "source": "/api/mock-interview/question-practice",
+      "destination": "/api/mock-interview-question-practice"
+    },
+    {
+      "source": "/api/mock-interview/session",
+      "destination": "/api/mock-interview-session"
+    },
+    {
+      "source": "/api/mock-interview/:sessionId/turn",
+      "destination": "/api/mock-interview-turn?sessionId=:sessionId"
+    },
+    {
+      "source": "/api/mock-interview/:sessionId/complete",
+      "destination": "/api/mock-interview-complete?sessionId=:sessionId"
+    },
     {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
