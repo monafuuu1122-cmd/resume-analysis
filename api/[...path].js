@@ -27,9 +27,34 @@ const parameterisedAliases = {
   },
 }
 
-export function resolvePath(url) {
+function resolveDynamicPath(query) {
+  const value = query?.path
+  if (Array.isArray(value)) {
+    return value.filter((segment) => segment != null && String(segment) !== '')
+  }
+
+  if (typeof value === 'string' && value) {
+    return value.split('/').filter(Boolean)
+  }
+
+  return []
+}
+
+export function resolvePath(url, query = {}) {
   const parsed = new URL(String(url ?? '/api'), 'http://vercel.local')
-  const rawPathname = parsed.pathname || '/api'
+  let rawPathname = parsed.pathname || '/api'
+
+  // Vercel can expose the dynamic catch-all template as req.url while the
+  // matched segments are available through req.query.path.
+  if (rawPathname === '/api/[...path]' || rawPathname === '/api') {
+    const dynamicSegments = resolveDynamicPath(query)
+    if (dynamicSegments.length > 0) {
+      rawPathname = `/api/${dynamicSegments
+        .map((segment) => encodeURIComponent(String(segment)))
+        .join('/')}`
+    }
+  }
+
   if (aliases[rawPathname]) return aliases[rawPathname]
 
   const parameterisedAlias = parameterisedAliases[rawPathname]
@@ -39,6 +64,6 @@ export function resolvePath(url) {
 }
 
 export default function handler(req, res) {
-  const pathname = resolvePath(req.url)
+  const pathname = resolvePath(req.url, req.query)
   return handleWorkerRequest(req, res, pathname)
 }
