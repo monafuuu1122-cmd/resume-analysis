@@ -15,6 +15,7 @@ import {
   jdAnalysisSchema,
   jdRecordSchema,
   profileMaterialSchema,
+  resumeVersionSchema,
   sourceArtifactSchema,
 } from './schemas'
 import {
@@ -50,6 +51,7 @@ export type InterviewProfileContext = z.infer<
 export type JdAnalysis = z.infer<typeof jdAnalysisSchema>
 export type JdRecord = z.infer<typeof jdRecordSchema>
 export type ProfileMaterial = z.infer<typeof profileMaterialSchema>
+export type ResumeVersion = z.infer<typeof resumeVersionSchema>
 export type SourceArtifact = z.infer<typeof sourceArtifactSchema>
 export type AnswerOptimization = z.infer<typeof answerOptimizationSchema>
 export type CompanyInsight = z.infer<typeof companyInsightSchema>

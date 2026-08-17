@@ -9,6 +9,7 @@ import {
   extractedClaimSchema,
   jdRecordSchema,
   profileMaterialSchema,
+  resumeVersionSchema,
   sourceArtifactSchema,
 } from './schemas'
 import {
@@ -51,6 +52,7 @@ export const migrationPackageSchema = z.object({
   claims: z.array(extractedClaimSchema).default([]),
   jdRecords: z.array(jdRecordSchema).default([]),
   profileMaterials: z.array(profileMaterialSchema).default([]),
+  resumeVersions: z.array(resumeVersionSchema).default([]),
   companyTargets: z.array(companyTargetSchema).default([]),
   careerDirections: z.array(careerDirectionSchema).default([]),
   careerDirectionFeedback: z.array(careerDirectionFeedbackSchema).default([]),

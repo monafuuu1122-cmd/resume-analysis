@@ -171,6 +171,9 @@ export const interviewProfileContextSchema = z
     ),
     experiences: z.array(experienceSchema),
     profileMaterials: z.array(profileMaterialSchema).optional(),
+    resumeText: z.string().trim().optional(),
+    resumeVersionId: z.string().min(1).optional(),
+    resumeVersionName: z.string().trim().min(1).optional(),
   })
   .superRefine((context, refinement) => {
     const experienceIds = new Set(
@@ -211,6 +214,19 @@ export const interviewProfileContextSchema = z
       }
     })
   })
+
+export const resumeVersionSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().trim().min(1),
+  source: z.enum(['pdf', 'manual', 'profile']),
+  fileName: z.string().trim().optional(),
+  notes: z.string().trim().optional(),
+  targetTags: z.array(z.string().trim().min(1)).default([]),
+  resumeText: z.string().trim().min(1),
+  profileSnapshot: interviewProfileContextSchema,
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+})
 
 export const jdAnalysisSchema = z.object({
   company: z.string().min(1).default('待补充'),
@@ -352,6 +368,16 @@ export const jdRecordSchema = z.object({
   inputHash: z.string().optional(),
   jdHash: z.string().optional(),
   profileHash: z.string().optional(),
+  resumeVersionId: z.string().min(1).optional(),
+  resumeVersionName: z.string().trim().min(1).optional(),
+  resumeSnapshot: z
+    .object({
+      id: z.string().min(1),
+      name: z.string().trim().min(1),
+      source: z.enum(['pdf', 'manual', 'profile']),
+      resumeText: z.string().trim().min(1),
+    })
+    .optional(),
   parentAnalysisId: z.string().optional(),
   activeJobId: z.string().optional(),
   companyResearchId: z.string().optional(),

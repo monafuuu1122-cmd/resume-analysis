@@ -10,6 +10,7 @@ import {
   extractedClaimSchema,
   jdRecordSchema,
   profileMaterialSchema,
+  resumeVersionSchema,
   sourceArtifactSchema,
 } from './schemas'
 
@@ -277,6 +278,7 @@ export const interviewBackupV2Schema = z.object({
   answerOptimizations: z.array(answerOptimizationSchema),
   questionPractices: z.array(questionPracticeSchema).default([]),
   profileMaterials: z.array(profileMaterialSchema).default([]),
+  resumeVersions: z.array(resumeVersionSchema).default([]),
   companyTargets: z.array(companyTargetSchema).default([]),
   careerDirections: z.array(careerDirectionSchema).default([]),
   careerDirectionFeedback: z

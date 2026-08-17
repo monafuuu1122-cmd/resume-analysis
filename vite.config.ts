@@ -20,6 +20,8 @@ export default defineConfig({
       'tests/sites-worker.test.mjs',
       'tests/html-export.test.mjs',
       'tests/local-html-launcher.test.mjs',
+      // This contract suite uses Node's built-in test runner; keep it out of Vitest.
+      'tests/vercel-function-layout.test.mjs',
     ],
   },
 })

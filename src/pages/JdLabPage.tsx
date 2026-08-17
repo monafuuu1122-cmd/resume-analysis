@@ -11,6 +11,7 @@ import {
 } from '../db/analysisJobRepository'
 import { loadConfirmedEvidenceSnapshot } from '../db/evidenceRepository'
 import { getJdRecord } from '../db/jdRepository'
+import { getResumeVersion } from '../db/resumeVersionRepository'
 import { migrateIfNeeded } from '../db/localDataMigration'
 import {
   createAnalysisInputHash,
@@ -18,9 +19,12 @@ import {
 } from '../domain/analysisJobs'
 import { buildInterviewProfileContext } from '../domain/interviewContext'
 import type { JdAnalysis, JdRecord } from '../domain/types'
+import type { ResumeVersion } from '../domain/types'
+import { interviewProfileContextSchema } from '../domain/schemas'
 import { jdStore } from '../stores/jdStore'
 import InterviewResearchPanel from '../components/interview/InterviewResearchPanel'
 import AnalysisProgress from '../components/jd/AnalysisProgress'
+import ResumeVersionPicker from '../components/jd/ResumeVersionPicker'
 
 type ResultTab = 'diagnosis' | 'resume' | 'interview'
 
@@ -46,6 +50,22 @@ export default function JdLabPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string>()
   const [activeJob, setActiveJob] = useState<AnalysisJob>()
+  const [selectedResumeVersion, setSelectedResumeVersion] =
+    useState<ResumeVersion>()
+
+  useEffect(() => {
+    let active = true
+    if (!selectedRecord?.resumeVersionId) {
+      setSelectedResumeVersion(undefined)
+      return
+    }
+    void getResumeVersion(selectedRecord.resumeVersionId).then((version) => {
+      if (active) setSelectedResumeVersion(version)
+    })
+    return () => {
+      active = false
+    }
+  }, [selectedRecord?.id, selectedRecord?.resumeVersionId])
 
   useEffect(() => {
     let active = true
@@ -108,7 +128,15 @@ export default function JdLabPage() {
     try {
       await migrateIfNeeded()
       const snapshot = await loadConfirmedEvidenceSnapshot()
-      const profileSnapshot = buildInterviewProfileContext(snapshot)
+      const selectedVersion = selectedResumeVersion
+      const profileSnapshot = selectedVersion
+        ? interviewProfileContextSchema.parse({
+            ...selectedVersion.profileSnapshot,
+            resumeText: selectedVersion.resumeText,
+            resumeVersionId: selectedVersion.id,
+            resumeVersionName: selectedVersion.name,
+          })
+        : buildInterviewProfileContext(snapshot)
       const now = new Date().toISOString()
       const analysisId =
         globalThis.crypto?.randomUUID?.() ??
@@ -120,6 +148,18 @@ export default function JdLabPage() {
         role: draft.role.trim(),
         jdText: draft.jdText.trim(),
         profileSnapshot,
+        ...(selectedVersion
+          ? {
+              resumeVersionId: selectedVersion.id,
+              resumeVersionName: selectedVersion.name,
+              resumeSnapshot: {
+                id: selectedVersion.id,
+                name: selectedVersion.name,
+                source: selectedVersion.source,
+                resumeText: selectedVersion.resumeText,
+              },
+            }
+          : {}),
       }
       const inputHash = await createAnalysisInputHash(inputSnapshot)
       const job = await createAnalysisJob({ analysisId, inputHash })
@@ -133,6 +173,18 @@ export default function JdLabPage() {
         role: draft.role.trim(),
         jdText: draft.jdText.trim(),
         profileSnapshot,
+        ...(selectedVersion
+          ? {
+              resumeVersionId: selectedVersion.id,
+              resumeVersionName: selectedVersion.name,
+              resumeSnapshot: {
+                id: selectedVersion.id,
+                name: selectedVersion.name,
+                source: selectedVersion.source,
+                resumeText: selectedVersion.resumeText,
+              },
+            }
+          : {}),
         inputSnapshot,
         inputHash,
         parentAnalysisId: selectedRecord?.id,
@@ -229,6 +281,10 @@ export default function JdLabPage() {
 
       <div className="jd-lab-layout">
         <form className="stack-form jd-input-panel" onSubmit={submit}>
+          <ResumeVersionPicker
+            selectedId={selectedResumeVersion?.id}
+            onSelect={setSelectedResumeVersion}
+          />
           <CompanyTargetPicker companyTargets={companyTargets} />
           <label>
             岗位名称
@@ -279,6 +335,9 @@ export default function JdLabPage() {
                   type="button"
                 >
                   {record.company} · {record.role}
+                  {record.resumeVersionName && (
+                    <small> · {record.resumeVersionName}</small>
+                  )}
                 </button>
                 <button
                   aria-label={`删除分析 ${record.company} · ${record.role}`}

@@ -353,6 +353,9 @@ function materialIds(payload) {
 
 function compactJdProfileContext(profileContext) {
   return {
+    resumeVersionId: text(profileContext?.resumeVersionId),
+    resumeVersionName: compactPromptText(profileContext?.resumeVersionName, 120),
+    resumeText: compactPromptText(profileContext?.resumeText, 12000),
     claims: list(profileContext?.claims).map((claim) => ({
       id: claim.id,
       kind: claim.kind,
@@ -419,7 +422,7 @@ async function analyzeJd(request, env, payload) {
     env,
     payload,
     'jdAnalysis',
-    `你是证据驱动的求职分析助手，只输出 JSON。只能引用 profileContext 中确认证据和 profileMaterials，不得编造。
+    `你是证据驱动的求职分析助手，只输出 JSON。只能引用 profileContext 中确认证据和 profileMaterials，不得编造。如果 profileContext.resumeText 存在，它是本次选定的简历正文；请按 JD 要求逐条对照，但只用确认证据支持个人贡献，不要整段搬运简历。
 输出字段：company,role,department,location,level,businessKeywords,matchScore(0-100),evidenceCoverage,
 strengths[{title,explanation,evidenceClaimIds,profileMaterialIds}],gaps[{title,explanation}],
 resumeRewrites[{sourceClaimId,original,rewritten,rationale,supportingClaimIds,profileMaterialIds,targetRequirement}],
@@ -994,6 +997,9 @@ function compactResearchSources(sources) {
 
 function compactProfileContext(profileContext) {
   return {
+    resumeVersionId: text(profileContext?.resumeVersionId),
+    resumeVersionName: compactPromptText(profileContext?.resumeVersionName, 120),
+    resumeText: compactPromptText(profileContext?.resumeText, 12_000),
     claims: list(profileContext?.claims).map((claim) => ({
       id: claim.id,
       kind: claim.kind,
@@ -1020,7 +1026,7 @@ async function interviewResearch(request, env, payload, companyOnly) {
   const ids = claimIds(payload)
   const identityStatus = 'confirmed'
   const allowCompanyInsights = true
-  const researchPrompt = `你是证据驱动的面试研究助手，只输出 JSON。候选人事实只能来自 profileContext。
+  const researchPrompt = `你是证据驱动的面试研究助手，只输出 JSON。候选人事实只能来自 profileContext；如果存在 resumeText，它是本次选定简历正文，可用于定位追问，但未被确认证据支持的内容必须标为待核实，不得写入 evidenceClaimIds。
 只输出最终结论，不输出推理或分析过程；内部证据 ID 只能写入 evidenceClaimIds、sourceIds 等结构化字段，不得出现在可见文案中。
 企业洞察仅使用模型已有知识，统一标为 inference 且 sourceIds 为空；不是实时联网结果，无法确认时写“现有知识不足”。
 输出：companyInsights[{topic(company|culture|talent),content,evidenceType(official|public|inference),sourceIds}],

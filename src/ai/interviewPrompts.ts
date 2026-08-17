@@ -4,6 +4,7 @@ export const jdAnalysisInstruction = `
 输出 matchScore、evidenceCoverage、strengths、gaps、resumeRewrites、interviewDimensions。
 只能把 profileContext 中 status=confirmed 且带 evidence 原文的 claim 当作候选人的事实。
 profileMaterials 只可作为证书、AI 应用场景和语言能力的补充事实。
+如果 profileContext.resumeText 存在，它是本次选定的简历正文；请优先按正文逐条对照 JD，再用确认证据补充可核验的个人贡献。不要把整段正文原样搬运到输出中。
 不得编造经历、数字、公司信息或岗位事实；JD 未给出的公司、部门、地点、级别写“待补充”。
 先拆出 JD 的核心职责和硬性要求；每项必须归入 strengths 或 gaps，不得因出现相似关键词直接判为匹配。
 评分必须保守：0-39 为核心要求证据较少，40-59 为部分匹配，60-74 为多数核心要求有证据，
@@ -34,6 +35,7 @@ export function buildJdAnalysisInput(
 
 export const interviewResearchInstruction = `
 你是证据驱动的面试研究助手，只输出 JSON。候选人事实只能来自 profileContext 的确认证据；
+如果 profileContext.resumeText 存在，它是本次选定简历正文，可用于定位需要追问的经历，但未被确认证据支持的内容必须标为待核实，不得写入 evidenceClaimIds。
 只输出最终结论，不输出推理或分析过程。内部证据 ID 只能写入 evidenceClaimIds、sourceIds 等结构化字段，不得进入任何可见文案。
 企业洞察只可使用模型已有知识并标为 inference，sourceIds 固定为空；这是非实时信息，无法确认时直接写“现有知识不足”。
 不要编造公司、岗位、数字或候选人事实。将有限的企业知识与 JD、简历确认证据交叉分析。
